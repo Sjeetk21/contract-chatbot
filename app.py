@@ -74,14 +74,41 @@ if user_query := st.chat_input("Ask for specifications, weights, or contract det
         st.markdown(user_query)
     st.session_state.messages.append({"role": "user", "content": user_query})
     
-    # Run through the RAG chain
+    # Run through the RAG chain with dynamic status and live-streaming response
     with st.chat_message("assistant"):
-        response = rag_chain.invoke({
-            "input": user_query,
-            "chat_history": st.session_state.chat_history
-        })
-        answer = response["answer"]
-        st.markdown(answer)
+        
+        # 1. Visual loader drawer while the vector database is queried
+        with st.status("🔍 Searching HSM Project documentation...", expanded=True) as status:
+            st.write("Scanning clauses, technical metrics, and data tables...")
+            
+            # Start gathering the data stream from LangChain
+            stream = rag_chain.stream({
+                "input": user_query,
+                "chat_history": st.session_state.chat_history
+            })
+            
+            # Intercept and cache chunks until the LLM begins answering text
+            chunks_cache = []
+            for chunk in stream:
+                chunks_cache.append(chunk)
+                if "answer" in chunk and chunk["answer"]:
+                    # The second text arrives, update and collapse the status box
+                    status.update(label="✍️ Response generated!", state="complete", expanded=False)
+                    break
+        
+        # 2. Generator function to pass to Streamlit's native streaming engine
+        def stream_remaining_response():
+            # Flush out any initial text caught during the search step
+            for c in chunks_cache:
+                if "answer" in c:
+                    yield c["answer"]
+            # Stream out the remaining chunks word-by-word
+            for c in stream:
+                if "answer" in c:
+                    yield c["answer"]
+                    
+        # Render the text beautifully live on screen
+        answer = st.write_stream(stream_remaining_response())
         
     # Keep track of history for multi-turn conversations
     st.session_state.messages.append({"role": "assistant", "content": answer})
