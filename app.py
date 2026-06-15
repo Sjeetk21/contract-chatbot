@@ -31,7 +31,7 @@ def load_rag_system():
     # Loads the updated vector store from the folder we uploaded
     vectorstore = Chroma(persist_directory="./chroma_db", embedding_function=embeddings)
     
-    llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0.1) # Lower temperature for numerical precision
+    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.1) # Lower temperature for numerical precision
     
     context_ualize_q_prompt = ChatPromptTemplate.from_messages([
         MessagesPlaceholder("chat_history"),
