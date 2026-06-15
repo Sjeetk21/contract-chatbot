@@ -12,7 +12,7 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 
 # Page setup
 st.set_page_config(page_title="Contract AI Assistant", page_icon="📄")
-st.title("📄 Smart Contract AI Assistant (Data-Optimized)")
+st.title("📄 ISP BURNPUR HSM project AI Assistant")
 st.write("Ask anything about specifications, weights, or values in your contract.")
 
 # Securely grab the API key from Streamlit's settings dashboard
